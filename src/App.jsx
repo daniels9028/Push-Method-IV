@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { getAllUsers } from "./services/user";
-import Table from "./components/table";
+import Table from "./components/Table";
 
 const App = () => {
   const [users, setUsers] = useState([]);
