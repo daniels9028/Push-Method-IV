@@ -1,6 +1,13 @@
 import React, { useState } from "react";
 import { formatDate } from "../utils/changeFormatDate";
-import { FaAngleLeft, FaAngleRight, FaSearch } from "react-icons/fa";
+import {
+  FaAngleLeft,
+  FaAngleRight,
+  FaSearch,
+  FaSort,
+  FaSortDown,
+  FaSortUp,
+} from "react-icons/fa";
 import Select from "react-select";
 
 const Table = ({
@@ -15,6 +22,19 @@ const Table = ({
   setSelectedOption,
   resetFilter,
 }) => {
+  const listKey = {
+    username: '["login"]["username"]',
+  };
+
+  const [sortConfig, setSortConfig] = useState({
+    key: null,
+    direction: "asc",
+  });
+
+  const getNestedValue = (obj, key) => {
+    return key.split(".").reduce((acc, part) => acc && acc[part], obj);
+  };
+
   const filteredData = data.filter(
     (item) =>
       item.name.first.toLowerCase().includes(search.toLowerCase()) ||
@@ -23,11 +43,40 @@ const Table = ({
       item.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const sortedData = [...filteredData].sort((a, b) => {
+    console.log(a);
+    if (!sortConfig.key) return 0;
+
+    const firstValue = getNestedValue(a, sortConfig.key);
+    const secondValue = getNestedValue(b, sortConfig.key);
+
+    if (firstValue < secondValue)
+      return sortConfig.direction === "asc" ? -1 : 1;
+    if (firstValue > secondValue)
+      return sortConfig.direction === "asc" ? 1 : -1;
+    return 0;
+  });
+
   const options = [
     { value: "", label: "All" },
     { value: "male", label: "Male" },
     { value: "female", label: "Female" },
   ];
+
+  const requestSort = (key) => {
+    let direction = "asc";
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc";
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key === key) {
+      return sortConfig.direction === "asc" ? <FaSortUp /> : <FaSortDown />;
+    }
+    return <FaSort />;
+  };
 
   return (
     <div className="p-6 bg-white shadow-lg rounded-lg border border-gray-200">
@@ -68,16 +117,50 @@ const Table = ({
           <table className="min-w-full border border-gray-300 rounded-xl">
             <thead className="bg-black text-white">
               <tr>
-                <th className="py-2 px-4 text-left">Username</th>
-                <th className="py-2 px-4 text-left">Name</th>
-                <th className="py-2 px-4 text-left">Email</th>
-                <th className="py-2 px-4 text-left">Gender</th>
-                <th className="py-2 px-4 text-left">Registered Date</th>
+                <th
+                  className="py-2 px-4"
+                  onClick={() => requestSort("login.username")}
+                >
+                  <div className="flex flex-row items-center justify-between cursor-pointer">
+                    <p>Username</p>
+                    <p>{getSortIcon("username")}</p>
+                  </div>
+                </th>
+                <th
+                  className="py-2 px-4"
+                  onClick={() => requestSort("name.title")}
+                >
+                  <div className="flex flex-row items-center justify-between cursor-pointer">
+                    <p>Name</p>
+                    <p>{getSortIcon("name")}</p>
+                  </div>
+                </th>
+                <th className="py-2 px-4" onClick={() => requestSort("email")}>
+                  <div className="flex flex-row items-center justify-between cursor-pointer">
+                    <p>Email</p>
+                    <p>{getSortIcon("email")}</p>
+                  </div>
+                </th>
+                <th className="py-2 px-4" onClick={() => requestSort("gender")}>
+                  <div className="flex flex-row items-center justify-between cursor-pointer">
+                    <p>Gender </p>
+                    <p>{getSortIcon("gender")}</p>
+                  </div>
+                </th>
+                <th
+                  className="py-2 px-4"
+                  onClick={() => requestSort("registered.date")}
+                >
+                  <div className="flex flex-row items-center justify-between cursor-pointer">
+                    <p>Registered Date </p>
+                    <p>{getSortIcon("registered.date")}</p>
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filteredData.length > 0 ? (
-                filteredData.map((user) => (
+              {sortedData.length > 0 ? (
+                sortedData.map((user) => (
                   <tr
                     className="border-b hover:bg-gray-100 transition duration-200"
                     key={user?.login?.uuid}
