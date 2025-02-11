@@ -1,9 +1,11 @@
 import { axiosInstance as axios } from "./axios";
 
-export const getAllUsers = async (page) => {
+export const getAllUsers = async (page, selectedOption) => {
+  let gender = selectedOption ? selectedOption.value : "";
+
   try {
     const data = await axios({
-      url: `?page=${page}&results=10&seed=abc`,
+      url: `?page=${page}&results=10&gender=${gender}`,
       method: "GET",
     });
 
